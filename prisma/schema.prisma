@@ -1,0 +1,117 @@
+// READ-ONLY SCHEMA — migrations owned by sg-finance-job-tracker repo. Do not modify.
+// Do NOT run prisma migrate dev or prisma db push from this repo.
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Job {
+  id                 String    @id @default(cuid())
+  externalId         String    @unique
+  companySlug        String
+  companyName        String
+  title              String
+
+  locationRaw        String?
+  locationCity       String?
+  locationState      String?
+  locationCountry    String?
+  locationRegion     String?
+  isRemote           Boolean   @default(false)
+  isHybrid           Boolean   @default(false)
+
+  department         String?
+  jobFamily          String?
+  experienceLevel    String?
+  employmentType     String?
+
+  tagsAssetClass     String[]  @default([])
+  tagsLicenses       String[]  @default([])
+  tagsTools          String[]  @default([])
+
+  salaryMin          Int?
+  salaryMax          Int?
+  salaryCurrency     String?
+  salaryPeriod       String?
+  salaryRaw          String?
+
+  experienceYearsMin Int?
+  experienceYearsMax Int?
+  educationRequired  String?
+  hasAiMl            Boolean   @default(false)
+
+  description        String?   @db.Text
+  jobUrl             String
+  source             String
+  sourceAts          String
+  firstSeenAt        DateTime  @default(now())
+  lastSeenAt         DateTime  @updatedAt
+  releasedDate       DateTime?
+  closedAt           DateTime?
+  isActive           Boolean   @default(true)
+  tagsExtractedAt    DateTime?
+
+  company            Company?  @relation(fields: [companySlug], references: [slug])
+
+  @@index([companySlug])
+  @@index([locationCountry])
+  @@index([isActive, lastSeenAt])
+}
+
+model Company {
+  id                    String   @id @default(cuid())
+  name                  String
+  slug                  String   @unique
+  segment               String
+  subSegment            String?
+  atsPlatform           String
+  atsBoardId            String?
+  atsTenant             String?
+  atsWd                 String?
+  atsSite               String?
+  hqCity                String?
+  hqCountry             String?
+  sgOfficePresence      Boolean  @default(true)
+  estimatedSgHeadcount  Int?
+  regulatedBy           String[] @default([])
+  parentCompany         String?
+  stockTicker           String?
+  jobs                  Job[]
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model ScraperHealthLog {
+  id             String    @id @default(cuid())
+  adapterName    String
+  companySlug    String?
+  runStartedAt   DateTime
+  runFinishedAt  DateTime?
+  jobsScraped    Int       @default(0)
+  jobsAdded      Int       @default(0)
+  jobsUpdated    Int       @default(0)
+  jobsClosed     Int       @default(0)
+  errorCount     Int       @default(0)
+  errorMessage   String?   @db.Text
+  success        Boolean   @default(false)
+
+  @@index([adapterName, runStartedAt])
+}
+
+model ClosedJobLog {
+  id          String   @id @default(cuid())
+  externalId  String
+  companySlug String
+  title       String
+  firstSeenAt DateTime
+  closedAt    DateTime @default(now())
+  daysOpen    Int
+
+  @@index([companySlug, closedAt])
+}
