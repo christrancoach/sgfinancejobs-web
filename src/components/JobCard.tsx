@@ -26,9 +26,7 @@ export default function JobCard({ id, title, companyName, companySlug, locationC
       <div className="flex flex-col gap-1">
         <h3 className="font-semibold text-slate-900 text-base leading-snug">{title}</h3>
         <p className="text-sm text-slate-600">
-          <Link href={`/companies/${companySlug}`} className="hover:text-teal-600 hover:underline" onClick={(e) => e.stopPropagation()}>
-            {companyName}
-          </Link>
+          <span className="hover:text-teal-600 hover:underline">{companyName}</span>
           <span className="mx-1.5 text-slate-300">|</span>
           {location}
         </p>
